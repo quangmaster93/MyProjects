@@ -1,0 +1,50 @@
+﻿@using DotNetNuke.Web.Client.ClientResourceManagement
+@using DotNetNuke.Web.Mvc.Helpers
+@using MVCModule.Models
+@inherits DotNetNuke.Web.Mvc.Framework.DnnWebViewPage<IEnumerable<MVCModule.Models.Product>>
+@{
+    //ClientResourceManager.RegisterStyleSheet(Dnn.DnnPage, "~/Content/bootstrap.min.css");
+    //ClientResourceManager.RegisterStyleSheet(Dnn.DnnPage, "~/Content/temp.css");
+
+    //ClientResourceManager.RegisterScript(Dnn.DnnPage, "~/DesktopModules/MVC/DotNetNuclear/RestaurantMenu/Resources/bootstrap/js/bootstrap.min.js", 20);
+    //ClientResourceManager.RegisterStyleSheet(Dnn.DnnPage, "~/DesktopModules/MVC/DotNetNuclear/RestaurantMenu/Resources/module.css");
+    ClientResourceManager.RegisterScript(Dnn.DnnPage, "~/DesktopModules/MVC/MVCModule/scripts/app/product.js");
+    ClientResourceManager.RegisterStyleSheet(Dnn.DnnPage, "~/DesktopModules/MVC/MVCModule/Content/module.css");
+    ClientResourceManager.RegisterStyleSheet(Dnn.DnnPage);
+
+}
+<div>
+    <h3>Products list</h3>
+    <a href="@Url.Action("Create", "Product")">Add new</a>
+
+    <table class="table table-striped table-condensed table-hover table-responsive table-bordered">
+        <thead >
+        <tr>
+            <th>STT</th>
+            <th>@Html.DisplayNameFor(p => p.Name)</th>
+            <th> @Html.DisplayNameFor(p => p.Description)</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (Product product in Model)
+        { 
+            <tr>
+                <td>@product.ProductId</td>
+                <td>@product.Name</td>
+                <td>@product.Description</td>
+                <td>
+                    <a href="@Url.Action("Create", "Product",new {productId=product.ProductId})">Edit</a>
+                    <a href="@Url.Action("Delete", "Product",new {productId=product.ProductId})">Delete</a>
+                    <a href="#" class="js-delete-product" data-productId=@product.ProductId>DeleteByApi</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+<script>
+    ProductController.DeleteProduct()
+</script>
+

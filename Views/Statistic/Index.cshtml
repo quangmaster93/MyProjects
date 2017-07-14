@@ -1,0 +1,117 @@
+﻿
+@using DotNetNuke.Web.Client.ClientResourceManagement
+@using DotNetNuke.Web.Mvc.Helpers
+@using MVCModule.Models
+<link href='http://fonts.googleapis.com/css?family=Lato:400,700' rel='stylesheet' type='text/css'>
+<link href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+@inherits DotNetNuke.Web.Mvc.Framework.DnnWebViewPage<IEnumerable<MVCModule.Models.Statistic>>
+    @{
+        ClientResourceManager.RegisterStyleSheet(Dnn.DnnPage, "~/DesktopModules/MVC/MVCModule/Content/statisticModule.css");
+        ClientResourceManager.RegisterStyleSheet(Dnn.DnnPage, "~/DesktopModules/MVC/MVCModule/Content/Fonts/MDI/css/materialdesignicons.min.css");
+
+        ClientResourceManager.RegisterStyleSheet(Dnn.DnnPage, "~/Resources/Shared/stylesheets/common/medium-editor.css");
+        ClientResourceManager.RegisterStyleSheet(Dnn.DnnPage, "~/Resources/Shared/stylesheets/common/default.css");
+
+        ClientResourceManager.RegisterScript(Dnn.DnnPage, "~/DesktopModules/MVC/MVCModule/scripts/vue.js");
+        ClientResourceManager.RegisterScript(Dnn.DnnPage, "~/Resources/Shared/scripts/CommonXinkciti/medium-editor.min.js");
+    }
+<script src="https://cdn.jsdelivr.net/npm/vue-resource@1.3.4/dist/vue-resource.js"></script>
+
+<div class="statistic-list text-center" id="statisticApp">
+    
+    <div v-for="(statistic,index) in statistics" class="statistic-block" v-if="!isClickedAdd">
+        <a class="icon" v-on:click="DisplayIconList(index)" v-bind:class="{active: statistic.IsActived }"><i v-bind:class="statistic.IconClass"></i></a>
+        <span class="delete" title="delete" v-on:click="DeleteStatistic(index)"><i class="mdi mdi-delete"></i></span>
+        <h2 class="counter editable" v-on:focusout="UpdateStatistic(index,'Quantity',$event)">{{statistic.Quantity}}</h2>
+        <h5 class="heading editable" v-on:focusout="UpdateStatistic(index,'Heading',$event)">{{statistic.Heading}} </h5>
+    </div>
+
+    <div v-if="isClickedAdd">
+        @Html.AntiForgeryToken()
+        <input type="hidden" v-model="newStatistic.StatisticId"/>
+        <input type="text" v-model="newStatistic.IconClass" placeholder="Icon"/>
+        <input type="number" v-model="newStatistic.Quantity" placeholder="Quantity"/>
+        <input type="text" v-model="newStatistic.Heading" placeholder="Heading"/>
+        <hr/>
+        <button class="btn btn-primary btn-sm" v-on:click="SaveStatistic">Save</button>
+        <button class="btn btn-default btn-sm" v-on:click="BackToList">Back</button>
+    </div>
+
+    <div class="addStatisticButton" v-on:click="ClickedAdd" v-if="!isClickedAdd">
+        <i class="mdi mdi-plus"></i>
+    </div>
+
+    <div class="listIcon" v-if="doDisplayIconList">
+        <a class="icon" v-for="icon in icons" href="#">
+            <i v-bind:class="icon"></i>
+        </a>
+    </div>
+</div>
+
+<script>
+    (function () {
+        //"use strict";
+        var editor = new MediumEditor('.editable', {
+    });
+
+        //vuejs
+        var statistics=@Html.Raw(Json.Encode(Model));
+        var icons = ['mdi mdi-silverware','mdi mdi-emoticon-happy','mdi mdi-human-male-female','mdi mdi-account','mdi mdi-account-check','mdi mdi-airplane','mdi mdi-alarm',
+            'mdi mdi-apple','mdi mdi-bell','mdi mdi-bike','mdi mdi-cellphone','mdi mdi-heart','mdi mdi-key','mdi mdi-phone','mdi mdi-play','mdi mdi-shield','mdi mdi-signal-4g'
+        ];
+        var vm = new Vue({
+            el: "#statisticApp",
+            data: {
+                statistics: statistics,
+                isClickedAdd: false,
+                newStatistic: {
+                    StatisticId: 0,
+                    IconClass: "",
+                    Heading: "",
+                    Quantity: 100,
+                    IsActived:false
+                },
+                icons: icons,
+                doDisplayIconList: false
+            },
+            methods: {
+                ClickedAdd:function() {
+                    this.isClickedAdd = true;
+                },
+                BackToList:function() {
+                    this.isClickedAdd = false;
+                },
+                SaveStatistic:function() {
+                    let serviceUrl = $.dnnSF().getServiceRoot("MVCModule") + "Statistic/Update";
+                    Vue.http.post(serviceUrl, this.newStatistic)
+                        .then(function() {
+                            }, 
+                            function(error) {
+                                alert(error.statusText);
+                            });
+                    this.isClickedAdd = false;
+                    this.statistics.push(this.newStatistic);
+                },
+                UpdateStatistic:function(index,property,event) {
+                    this.statistics[index][property] = event.target.innerHTML;
+                    let serviceUrl = $.dnnSF().getServiceRoot("MVCModule") + "Statistic/Update";
+                    Vue.http.post(serviceUrl, this.statistics[index]);
+                },
+                DeleteStatistic:function(index) {
+                    let serviceUrl = $.dnnSF().getServiceRoot("MVCModule") + "Statistic/Delete";
+                    Vue.http.post(serviceUrl, this.statistics[index]);
+                    this.statistics.splice(index, 1);
+                },
+                DisplayIconList:function(index) {
+                    this.doDisplayIconList = !this.doDisplayIconList;
+                    for (var i = 0; i < this.statistics.length; i++) {
+                        if (i===index) {
+                            this.statistics[i].IsActived = !this.statistics[index].IsActived;
+                        }
+                        this.statistics[i].IsActived = false;
+                    }
+                }
+            }
+        });
+    }());
+</script>

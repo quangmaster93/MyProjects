@@ -1,0 +1,8 @@
+﻿table tr td,
+table tr th {
+  width: 33%;
+  font-weight: bold;
+}
+#a {
+  color: rebeccapurple;
+}
